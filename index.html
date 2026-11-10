@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:," />
+    <title>HKN Luxury Cars — 3D Showroom Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,600;1,700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,600;1,700&display=swap" rel="stylesheet" /></noscript>
+    <style>
+      :root{
+        --bg:#070605; --bg2:#0c0a07; --surface:#14110b; --surface2:#1a160e;
+        --ink:#f4edd8; --muted:#bcae8d; --faint:#8a7d5f;
+        --gold:#d4af37; --gold-hi:#f2da8a; --gold-deep:#8a6414;
+        --line:rgba(212,175,55,.28);
+        --shadow:0 22px 44px rgba(0,0,0,.6);
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{
+        margin:0; background:var(--bg); color:var(--ink);
+        font-family:"Jost",system-ui,sans-serif; font-weight:400;
+        -webkit-font-smoothing:antialiased; overflow-x:hidden;
+      }
+      h1,h2,h3,.display{font-family:"Marcellus",serif; font-weight:400; letter-spacing:.01em}
+      a{color:inherit}
+      button{font-family:inherit; cursor:pointer}
+      img{display:block; max-width:100%}
+
+      /* ---------- header (as in the HKN Auto Gallery design) ---------- */
+      header.topbar{
+        position:sticky; top:0; z-index:60;
+        display:flex; align-items:center; gap:18px;
+        padding:10px clamp(14px,3.5vw,40px);
+        background:rgba(5,4,2,.92);
+        backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+        border-bottom:1px solid var(--line);
+      }
+      .brand{display:flex; align-items:center; gap:11px; text-decoration:none; flex:none}
+      .crest{width:40px; height:46px; flex:none}
+      .brand .bname{font-family:"Marcellus",serif; font-size:21px; letter-spacing:.12em; line-height:1.05; white-space:nowrap}
+      .brand .bname em{font-style:normal; color:var(--gold-hi)}
+      .brand .bsub{display:block; font-family:"Jost",sans-serif; font-size:10.5px; letter-spacing:.34em; color:var(--gold-hi)}
+      .icon-btn{
+        width:40px; height:40px; border-radius:50%; flex:none; position:relative;
+        border:1.5px solid var(--line); display:inline-flex; align-items:center; justify-content:center;
+        background:rgba(255,255,255,.03); text-decoration:none;
+      }
+      .icon-btn svg{width:18px; height:18px; fill:var(--gold-hi)}
+      .icon-btn:hover{border-color:var(--gold)}
+      .icon-btn .cbadge{
+        position:absolute; top:-4px; right:-4px; min-width:17px; height:17px; padding:0 4px;
+        border-radius:999px; background:#d42427; color:#fff; font-size:10.5px; font-weight:600;
+        display:flex; align-items:center; justify-content:center;
+      }
+      nav.links{display:flex; gap:22px; font-size:14.5px; margin-left:8px}
+      nav.links a{text-decoration:none; color:#e6dcc0; white-space:nowrap}
+      nav.links a:hover{color:var(--gold-hi)}
+      nav.links a.goldpill{
+        border:1.5px solid var(--gold); border-radius:999px; padding:5px 15px; color:var(--gold-hi);
+        display:inline-flex; align-items:center; gap:6px;
+      }
+      .top-right{margin-left:auto; display:flex; align-items:center; gap:12px; flex:none}
+      .searchbox{
+        display:flex; align-items:center; gap:8px; border:1.5px solid var(--line); border-radius:999px;
+        padding:7px 14px; background:rgba(255,255,255,.03); min-width:170px;
+      }
+      .searchbox svg{width:15px; height:15px; fill:var(--muted); flex:none}
+      .searchbox input{
+        background:none; border:none; outline:none; color:var(--ink); font:inherit; font-size:14px; width:100%;
+      }
+      .searchbox input::placeholder{color:var(--faint)}
+      .wa-btn{
+        display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+        background:#1faa55; color:#fff; font-weight:500; font-size:14.5px;
+        padding:9px 16px; border-radius:999px; white-space:nowrap;
+      }
+      .wa-btn svg{width:17px; height:17px; fill:#fff; flex:none}
+      @media (max-width:1080px){ nav.links{display:none} }
+      @media (max-width:640px){
+        .searchbox{display:none} .icon-btn{display:none} .brand .bname{font-size:19px; letter-spacing:.07em} .crest{width:30px; height:35px}
+        header.topbar{gap:10px; padding:9px 12px}
+        header.topbar .wa-btn{padding:10px 12px}
+        header.topbar .wa-btn .watxt{display:none}
+        .ring-stage{height:276px}
+        .ring-item{width:118px}
+        .hero-grid{padding-top:14px}
+      }
+
+      /* ---------- showroom backdrop ---------- */
+      .showroom{
+        position:relative;
+        background:
+          linear-gradient(180deg, rgba(7,6,5,.78) 0%, rgba(7,6,5,.52) 42%, rgba(7,6,5,.66) 74%, rgba(7,6,5,.93) 100%),
+          radial-gradient(1100px 420px at 50% -60px, rgba(212,175,55,.20), transparent 62%),
+          url('assets/img/p01.jpg') center 32% / cover no-repeat,
+          linear-gradient(180deg,#0a0906 0%, #100d08 46%, #070605 100%);
+        border-bottom:1px solid var(--line);
+        overflow:hidden;
+      }
+      .showroom::after{ /* polished floor band */
+        content:""; position:absolute; left:0; right:0; bottom:0; height:120px; pointer-events:none;
+        background:linear-gradient(180deg, transparent, rgba(212,175,55,.07) 55%, rgba(212,175,55,.13));
+        border-top:1px solid rgba(212,175,55,.16);
+      }
+      .wrap{max-width:1280px; margin:0 auto; padding:0 clamp(14px,3.5vw,40px); position:relative; z-index:1}
+
+      /* ---------- the golden ring ---------- */
+      .ring-zone{position:relative; padding-top:10px}
+      .showroom .wrap{max-width:1460px}
+      .dream-band{text-align:center; max-width:840px; margin:0 auto; padding:30px 0 34px}
+      .dream-band h1{font-family:"Marcellus",serif; font-size:clamp(36px,4.8vw,56px); line-height:1.05; margin:0; text-transform:uppercase}
+      .dream-band h1 .goldline{display:block; color:var(--gold-hi)}
+      .dream-band .lede{color:#ddd2b2; font-size:16px; line-height:1.55; margin:12px auto 18px; max-width:660px}
+      .dream-band .lede b{color:var(--gold-hi); font-weight:600}
+      .dream-band .hero-note{justify-content:center}
+      .ring-stage{position:relative; height:clamp(360px,44vw,560px); margin-top:2px}
+      .ring-track{
+        position:absolute; left:50%; top:54%; transform:translate(-50%,-50%);
+        border-radius:50%; pointer-events:none;
+      }
+      .ring-track.t1{width:97%; height:82%; border:3px solid rgba(212,175,55,.65); box-shadow:0 0 38px rgba(212,175,55,.28), inset 0 0 38px rgba(212,175,55,.12)}
+      .ring-track.t2{width:88%; height:68%; border:2px solid rgba(212,175,55,.38)}
+      .ring-track.t3{width:100%; height:94%; border:6px solid rgba(212,175,55,.10)}
+      .ring-glint{
+        position:absolute; width:13px; height:13px; border-radius:50%; z-index:29; pointer-events:none;
+        background:radial-gradient(circle,#fff3c4 0%, #e9c860 55%, rgba(212,175,55,0) 72%);
+        box-shadow:0 0 18px 5px rgba(212,175,55,.5);
+        transform:translate(-50%,-50%);
+      }
+      .ring-item{
+        position:absolute; width:clamp(150px,23vw,340px);
+        transform:translate(-50%,-50%);
+        will-change:left,top,transform;
+      }
+      .ring-item .rname{
+        text-align:center; font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+        color:var(--gold-hi); margin-top:7px; text-shadow:0 2px 8px #000;
+      }
+      .ring-arrow{
+        position:absolute; top:54%; transform:translateY(-50%); z-index:30;
+        width:42px; height:42px; border-radius:50%;
+        border:1.5px solid var(--gold); background:rgba(10,8,4,.8); color:var(--gold-hi);
+        font-size:22px; line-height:1; display:flex; align-items:center; justify-content:center;
+      }
+      .ring-arrow:hover{background:rgba(212,175,55,.18)}
+      .ring-arrow.prev{left:2px} .ring-arrow.next{right:2px}
+      @media (max-width:640px){ .ring-arrow{width:34px; height:34px; font-size:18px} .ring-item .rname{display:none} }
+
+      /* ---------- oval gold frames + photo-3D spinners ---------- */
+      .oval{
+        border-radius:50%; padding:6px;
+        background:linear-gradient(155deg,#f7e38b 0%, #caa12f 34%, #7c5c10 55%, #eed27a 78%, #a37f1d 100%);
+        box-shadow:0 16px 30px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.4), 0 0 22px rgba(212,175,55,.18);
+      }
+      .oval-in{
+        border-radius:50%; overflow:hidden; background:#050505; position:relative;
+        aspect-ratio:3/2;
+      }
+      .spin{position:absolute; inset:0; cursor:grab; touch-action:pan-y; user-select:none; -webkit-user-select:none}
+      .spin:active{cursor:grabbing}
+      .spin img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none}
+      .spin img.top{opacity:0}
+      .spin .live-dot{
+        position:absolute; left:50%; bottom:9%; transform:translateX(-50%);
+        display:inline-flex; align-items:center; gap:6px; pointer-events:none;
+        font-size:9.5px; letter-spacing:.2em; color:#ffeec2;
+        background:rgba(0,0,0,.55); border:1px solid rgba(212,175,55,.5);
+        padding:3px 9px; border-radius:999px; white-space:nowrap;
+      }
+      .spin .live-dot i{width:6px; height:6px; border-radius:50%; background:#3ddc74; box-shadow:0 0 7px #3ddc74; animation:pulse 1.8s infinite}
+      @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+      .pedestal{
+        width:58%; height:15px; margin:5px auto 0; border-radius:50%;
+        background:radial-gradient(closest-side, rgba(242,218,138,.55), rgba(212,175,55,.16) 58%, transparent 75%);
+      }
+      .pedestal.ringp{width:52%; height:10px; margin-top:3px}
+
+      /* ---------- hero ---------- */
+      .hero-grid{
+        display:grid; grid-template-columns:minmax(300px,430px) 1fr; gap:clamp(18px,3vw,44px);
+        align-items:center; padding:8px 0 42px;
+      }
+      @media (max-width:900px){ .hero-grid{grid-template-columns:1fr; padding-bottom:34px} }
+      .hero-copy h1{
+        font-family:"Jost",sans-serif; font-weight:700; font-style:italic;
+        font-size:clamp(40px,5.2vw,64px); line-height:1.02; margin:0 0 6px; letter-spacing:.005em;
+        color:#f7f2df; text-transform:uppercase;
+      }
+      .hero-copy h1 .goldline{display:block; color:var(--gold-hi)}
+      .hero-copy .lede{color:#ddd2b2; font-size:16.5px; line-height:1.55; margin:10px 0 20px; max-width:400px}
+      .hero-copy .lede b{color:var(--gold-hi); font-weight:600}
+      .btn-gold{
+        display:inline-flex; align-items:center; gap:9px; text-decoration:none; border:none;
+        background:linear-gradient(180deg,#f0d47a,#c49a35); color:#241a02;
+        font-weight:600; font-size:16px; padding:13px 26px; border-radius:999px;
+        box-shadow:0 10px 24px rgba(196,154,53,.35);
+      }
+      .btn-gold:hover{filter:brightness(1.07)}
+      .btn-gold .tri{width:0;height:0;border-left:10px solid #241a02;border-top:6px solid transparent;border-bottom:6px solid transparent}
+      .hero-note{margin-top:16px; font-size:13.5px; color:var(--muted); display:flex; align-items:center; gap:8px}
+      .hero-note i{width:7px; height:7px; border-radius:50%; background:#3ddc74; box-shadow:0 0 8px #3ddc74; animation:pulse 1.8s infinite; flex:none}
+
+      .hero-stage{position:relative; text-align:center}
+      .hero-oval{max-width:640px; margin:0 auto; padding:8px}
+      .hero-oval .oval-in{aspect-ratio:3/2}
+      .hero-platform{position:relative; height:44px; margin-top:-16px}
+      .hero-platform .pring{
+        position:absolute; left:50%; transform:translateX(-50%); border-radius:50%;
+        border:2.5px solid rgba(212,175,55,.75); box-shadow:0 0 22px rgba(212,175,55,.25), inset 0 0 22px rgba(212,175,55,.14);
+      }
+      .hero-platform .pring.p1{width:min(600px,88%); height:42px; top:0; background:radial-gradient(closest-side, rgba(242,218,138,.30), rgba(212,175,55,.10) 58%, transparent 74%)}
+      .hero-platform .pring.p2{width:min(500px,74%); height:32px; top:6px; border-color:rgba(212,175,55,.45)}
+      .hero-platform .pring.p3{width:min(390px,58%); height:23px; top:11px; border-color:rgba(212,175,55,.3)}
+      .hero-name{font-family:"Marcellus",serif; font-size:clamp(24px,3vw,33px); margin:12px 0 2px}
+      .hero-sub{color:var(--gold-hi); letter-spacing:.24em; text-transform:uppercase; font-size:12px; margin:0 0 12px}
+      .hero-specs{display:flex; gap:0; justify-content:center; flex-wrap:wrap; margin-bottom:16px}
+      .hero-specs div{padding:2px 18px; border-right:1px solid rgba(212,175,55,.3)}
+      .hero-specs div:last-child{border-right:none}
+      .hero-specs b{display:block; font-size:19px; font-weight:600}
+      .hero-specs span{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+
+      /* ---------- floor rows ---------- */
+      main{max-width:1460px; margin:0 auto; padding:0 clamp(14px,3.5vw,40px)}
+      .row-head{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:10px; margin:44px 0 4px}
+      .row-head h2{font-size:clamp(25px,3.2vw,36px); margin:0}
+      .row-head h2 em{font-style:normal; color:var(--gold-hi)}
+      .row-head p{color:var(--muted); margin:5px 0 0; max-width:560px; font-size:15px; line-height:1.5}
+      .count-badge{font-size:12.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--gold-hi); border:1px solid var(--gold); border-radius:999px; padding:7px 14px; white-space:nowrap}
+      #collection{padding-top:30px}
+      .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(12px,1.8vw,24px); margin-top:20px}
+      @media (max-width:767px){ .grid{grid-template-columns:repeat(2,1fr); gap:10px} main{padding:0 8px} }
+      .cat-card{text-align:center; color:var(--ink)}
+      .cat-card.hidden{display:none}
+      .cat-card .badge{
+        width:54px; height:54px; margin:0 auto -17px; position:relative; z-index:3;
+        border-radius:50%; border:1.5px solid var(--gold);
+        background:radial-gradient(circle at 35% 30%, #2b2413, #0d0b06 70%);
+        color:var(--gold-hi); font-family:"Marcellus",serif; font-size:13px; letter-spacing:.03em;
+        display:flex; align-items:center; justify-content:center;
+        box-shadow:0 6px 14px rgba(0,0,0,.5);
+      }
+      .cat-card h3{margin:14px 0 2px; font-size:clamp(21px,2.3vw,27px); line-height:1.2}
+      .cat-card .col{color:var(--gold-hi); font-size:11px; letter-spacing:.18em; text-transform:uppercase; margin:0 0 13px}
+      .cat-card .view-btn{font-size:14.5px; padding:11px 24px}
+      .cat-card:hover .oval{box-shadow:0 20px 36px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.4), 0 0 30px rgba(212,175,55,.3)}
+      .no-match{display:none; text-align:center; color:var(--muted); padding:22px 0 4px; font-size:15.5px}
+      .no-match.show{display:block}
+
+      /* ---------- about / services / cta ---------- */
+      .band{margin:56px 0 0; border-top:1px solid var(--line); padding-top:36px}
+      .band h2{font-size:clamp(23px,3vw,32px); margin:0 0 6px}
+      .band h2 em{font-style:normal; color:var(--gold-hi)}
+      .band .sub{color:var(--muted); margin:0 0 24px; max-width:620px; line-height:1.55; font-size:15.5px}
+      .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+      @media (max-width:760px){ .steps{grid-template-columns:1fr} }
+      .step{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px}
+      .step .num{
+        width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+        border:1.5px solid var(--gold); color:var(--gold-hi); font-family:"Marcellus",serif; font-size:16px; margin-bottom:12px;
+      }
+      .step h3{margin:0 0 6px; font-size:19px}
+      .step p{margin:0; color:var(--muted); line-height:1.55; font-size:14.5px}
+      .cta-band{
+        margin:44px 0 30px; border-radius:18px; padding:clamp(24px,4vw,40px);
+        background:linear-gradient(120deg,#171106,#2a1f08 55%,#171106); color:#f6efdb;
+        display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between;
+        border:1px solid rgba(212,175,55,.45);
+      }
+      .cta-band h2{margin:0 0 6px; font-size:clamp(23px,3vw,32px)}
+      .cta-band p{margin:0; color:#d3c69c; max-width:520px; line-height:1.55; font-size:15.5px}
+      footer.site{
+        border-top:1px solid var(--line); padding:22px clamp(14px,3.5vw,40px) 34px;
+        color:var(--muted); font-size:13.5px; display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between;
+        max-width:1280px; margin:0 auto;
+      }
+
+      /* ---------- breakout film overlay ---------- */
+      #film{
+        position:fixed; inset:0; z-index:100; display:none; flex-direction:column;
+        background:#030302;
+      }
+      #film.open{display:flex}
+      .film-top{
+        display:flex; align-items:center; justify-content:space-between; gap:12px;
+        padding:12px clamp(14px,3vw,28px); color:#f4edd8;
+      }
+      .film-top .t{font-family:"Marcellus",serif; letter-spacing:.06em; font-size:clamp(15px,2.4vw,19px)}
+      .film-top .t em{font-style:normal; color:var(--gold-hi)}
+      .film-top .t small{display:block; font-family:"Jost",sans-serif; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); margin-top:2px}
+      .film-btn{
+        background:rgba(255,255,255,.08); color:#f4edd8; border:1px solid rgba(212,175,55,.5);
+        border-radius:999px; padding:9px 18px; font-size:14px; flex:none;
+      }
+      .film-btn:hover{background:rgba(212,175,55,.2)}
+      .film-stage{flex:1; display:flex; align-items:center; justify-content:center; min-height:0; padding:0 12px}
+      #filmVideo{
+        max-width:min(440px,94vw); max-height:100%; width:auto; height:100%;
+        border-radius:12px; border:1px solid rgba(212,175,55,.4);
+        box-shadow:0 30px 70px rgba(0,0,0,.7); background:#000;
+      }
+      .film-cap{
+        text-align:center; color:var(--muted); font-size:14.5px; line-height:1.5;
+        padding:12px 18px 20px; margin:0;
+      }
+      .film-cap b{color:var(--gold-hi); font-weight:600}
+      @media (prefers-reduced-motion: reduce){
+        html{scroll-behavior:auto}
+        .spin .live-dot i,.hero-note i{animation:none !important}
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="HKN Luxury Cars — home">
+        <svg class="crest" viewBox="0 0 40 46" aria-hidden="true">
+          <path d="M20 1 L37 6 V22 C37 33 29 41 20 45 C11 41 3 33 3 22 V6 Z" fill="#0d0b06" stroke="#d4af37" stroke-width="2"/>
+          <path d="M8 12 L11 7 L15 12 L20 6 L25 12 L29 7 L32 12 L31 15 H9 Z" fill="#d4af37"/>
+          <text x="20" y="30" text-anchor="middle" font-family="Georgia,serif" font-size="10.5" fill="#f2da8a" letter-spacing="1">HKN</text>
+          <path d="M10 35 H30" stroke="#d4af37" stroke-width="1.4"/>
+        </svg>
+        <span class="bname">HKN<span class="bsub">Auto Gallery</span></span>
+      </a>
+      <nav class="links" aria-label="Main">
+        <a href="#home">Home</a>
+        <a href="#collection">Luxury Cars</a>
+        <a href="#collection">Sports Cars</a>
+        <a href="#collection">About Us</a>
+        <a href="#collection">Services</a>
+        <a href="#contact">Contact Us</a>
+      </nav>
+      <div class="top-right">
+        <button class="icon-btn" type="button" aria-label="Search cars">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 2a8 8 0 1 0 4.9 14.3l5 5 1.5-1.4-5-5A8 8 0 0 0 10 2zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"/></svg>
+        </button>
+        <a class="icon-btn" href="#contact" aria-label="Your account">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z"/></svg>
+        </a>
+        <a class="icon-btn" href="#collection" aria-label="Your shortlist — see the featured collection">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7V6a6 6 0 1 1 12 0v1h3l-1.2 13.1a2 2 0 0 1-2 1.9H6.2a2 2 0 0 1-2-1.9L3 7zm2 0h8V6a4 4 0 1 0-8 0z"/></svg>
+        </a>
+        
+      </div>
+    </header>
+
+    <!-- ================= SHOWROOM : RING + HERO ================= -->
+    <section class="showroom" id="home">
+      <div class="wrap">
+        <div class="ring-zone">
+          <div class="ring-stage" id="ringStage" aria-label="A golden ring of ten cars, turning continuously">
+            <div class="ring-track t3"></div>
+            <div class="ring-track t1"></div>
+            <div class="ring-track t2"></div>
+            <div id="ringItems"></div>
+            <div class="ring-glint" id="ringGlint" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="dream-band">
+          <h1>Dream Big <span class="goldline">Drive Luxury</span></h1>
+          
+          <a class="btn-gold" href="#collection">Explore More <span aria-hidden="true">&#8250;</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FOUR CATEGORIES (as in the design photo) ================= -->
+    <main>
+      <section id="collection" aria-label="The four collections">
+        <div class="grid" id="catGrid">
+          <div class="cat-card" data-name="ferrari 488 gtb sports cars rosso corsa red">
+            <div class="oval"><div class="oval-in">
+              <div class="spin" data-car="ferrari" role="img" aria-label="Ferrari 488 GTB 3D photo — drag to turn, tap to watch its film">
+                <img src="assets/img/p03.jpg" alt="Ferrari 488 GTB in Rosso Corsa Red — 3D photo" loading="lazy" />
+                
+              </div>
+            </div></div>
+            <div class="pedestal"></div>
+            <h3>Ferrari Sports Cars</h3>
+            <p class="col">Ferrari 488 GTB · Rosso Corsa Red</p>
+            <button class="btn-gold view-btn" type="button" data-film="ferrari">View Collection</button>
+          </div>
+          <div class="cat-card" data-name="mercedes-benz s-class luxury cars polar white sedan">
+            <div class="oval"><div class="oval-in">
+              <div class="spin" data-car="mercedes" role="img" aria-label="Mercedes-Benz S-Class 3D photo — drag to turn, tap to watch its film">
+                <img src="assets/img/p04.jpg" alt="Mercedes-Benz S-Class in Polar White — 3D photo" loading="lazy" />
+                
+              </div>
+            </div></div>
+            <div class="pedestal"></div>
+            <h3>Mercedes Luxury Cars</h3>
+            <p class="col">Mercedes-Benz S-Class · Polar White</p>
+            <button class="btn-gold view-btn" type="button" data-film="mercedes">View Collection</button>
+          </div>
+          <div class="cat-card" data-name="bmw m5 bmw collection portimao blue sedan">
+            <div class="oval"><div class="oval-in">
+              <div class="spin" data-car="bmw" role="img" aria-label="BMW M5 3D photo — drag to turn, tap to watch its film">
+                <img src="assets/img/p05.jpg" alt="BMW M5 in Portimao Blue — 3D photo" loading="lazy" />
+                
+              </div>
+            </div></div>
+            <div class="pedestal"></div>
+            <h3>BMW Collection</h3>
+            <p class="col">BMW M5 · Portimao Blue</p>
+            <button class="btn-gold view-btn" type="button" data-film="bmw">View Collection</button>
+          </div>
+          <div class="cat-card" data-name="lamborghini huracan super cars giallo yellow">
+            <div class="oval"><div class="oval-in">
+              <div class="spin" data-car="lamborghini" role="img" aria-label="Lamborghini Huracán 3D photo — drag to turn, tap to watch its film">
+                <img src="assets/img/p06.jpg" alt="Lamborghini Huracán in Giallo Yellow — 3D photo" loading="lazy" />
+                
+              </div>
+            </div></div>
+            <div class="pedestal"></div>
+            <h3>Lamborghini Super Cars</h3>
+            <p class="col">Lamborghini Huracán · Giallo Yellow</p>
+            <button class="btn-gold view-btn" type="button" data-film="lamborghini">View Collection</button>
+          </div>
+        </div>
+      </section>
+
+      
+
+      
+
+      
+    </main>
+
+    <footer class="site" id="contact">
+      <span>HKN Luxury Cars — HKN Auto Gallery · by HKN Digital Creator.</span>
+    </footer>
+
+    <!-- ================= BREAKOUT FILM OVERLAY ================= -->
+    <div id="film" role="dialog" aria-modal="true" aria-label="Car breakout film">
+      <div class="film-top">
+        <span class="t"><span id="filmName">Ferrari 488 GTB</span> <em>— Breakout Film</em><small>Screen → Glass Door → Road → Return</small></span>
+        <button class="film-btn" id="filmClose" type="button">✕ Close</button>
+      </div>
+      <div class="film-stage">
+        <video id="filmVideo" controls playsinline preload="none" poster=""></video>
+      </div>
+      <p class="film-cap" id="filmCap">The same car you tapped — <b>one driver</b>, out through the showroom glass and onto the road.</p>
+    </div>
+
+    <script>
+      /* PHOTO3D DATA MANIFEST — every photograph used by the photo-3D engine,
+         embedded in this page as base64 image data (data: URIs). Each set
+         holds the car's six photographs, v1..v6, in order: front, right side, left side, back, top, bottom. The page
+         requests no photograph files at runtime: it is fully self-contained. */
+      var PHOTO3D = {"audi":["assets/img/p07.jpg","assets/img/p08.jpg","assets/img/p09.jpg","assets/img/p10.jpg","assets/img/p11.jpg","assets/img/p12.jpg"],"bmwblue":["assets/img/p13.jpg","assets/img/p14.jpg","assets/img/p15.jpg","assets/img/p16.jpg","assets/img/p17.jpg","assets/img/p18.jpg"],"chiron":["assets/img/p19.jpg","assets/img/p20.jpg","assets/img/p21.jpg","assets/img/p22.jpg","assets/img/p23.jpg","assets/img/p24.jpg"],"divo":["assets/img/p25.jpg","assets/img/p26.jpg","assets/img/p27.jpg","assets/img/p28.jpg","assets/img/p29.jpg","assets/img/p30.jpg"],"ferrari":["assets/img/p31.jpg","assets/img/p32.jpg","assets/img/p33.jpg","assets/img/p34.jpg","assets/img/p35.jpg","assets/img/p36.jpg"],"gtr":["assets/img/p37.jpg","assets/img/p38.jpg","assets/img/p39.jpg","assets/img/p40.jpg","assets/img/p41.jpg","assets/img/p42.jpg"],"lamborghini":["assets/img/p49.jpg","assets/img/p50.jpg","assets/img/p51.jpg","assets/img/p52.jpg","assets/img/p53.jpg","assets/img/p54.jpg"],"mercedeswhite":["assets/img/p55.jpg","assets/img/p56.jpg","assets/img/p57.jpg","assets/img/p58.jpg","assets/img/p59.jpg","assets/img/p60.jpg"],"porsche":["assets/img/p61.jpg","assets/img/p62.jpg","assets/img/p63.jpg","assets/img/p64.jpg","assets/img/p65.jpg","assets/img/p66.jpg"],"tourbillon":["assets/img/p67.jpg","assets/img/p68.jpg","assets/img/p69.jpg","assets/img/p70.jpg","assets/img/p71.jpg","assets/img/p72.jpg"]};
+    </script>
+    <script>
+      /* FILMS MANIFEST — every breakout film is hosted on GitHub Pages
+         and loaded only when a car is tapped: the video element carries
+         preload="none" and no src until openFilm() sets it, so no film
+         bytes are part of this page and the page itself stays light. */
+      var FILMS = {
+        "bugatti": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-bugatti.mp4",
+        "ferrari": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-ferrari.mp4",
+        "lamborghini": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-lamborghini.mp4",
+        "rollsroyce": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-rollsroyce.mp4",
+        "mercedes": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-mercedes.mp4",
+        "bmw": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-bmw.mp4",
+        "tourbillon": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-tourbillon.mp4",
+        "divo": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-divo.mp4",
+        "audi": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-audi.mp4",
+        "nissan": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-gtr.mp4",
+        "porsche": "https://hanifkhan741977.github.io/hkn-luxury-cars/assets/shows/show-porsche.mp4"
+      };
+    </script>
+    <script>
+      /* =====================================================================
+         PHOTO-3D ENGINE — v9, rebuilt to the owner's exact correction.
+
+         HIS WORDS: the frames must NOT hold a video or a sliced-up movie.
+         For each car, take FIVE side photographs and build ONE 3D photo
+         from them; that 3D photo sits in the car's own frame and
+         auto-rotates there. That is what this engine does:
+
+         1. SIX STILL PHOTOGRAPHS PER CAR — embedded in this very page:
+            every car's six photographs (v1..v6) live in the
+            PHOTO3D data manifest below as base64 image data, so the
+            page makes ZERO external requests for photographs and works
+            as a single self-contained file:
+            six photographs of the one car (front, right side, left side,
+            back, top, bottom), all from a single consistent photo set.
+            The old 17-frame sets — sliced out of rotating videos, with the
+            scenery jumping between frames — are deleted from the page.
+         2. THE TURN IS A PHOTO TURN. The engine crossfades between the
+            six photographs with a slight parallax drift (v1→v6→v1), so
+            the photograph itself turns inside its golden frame — no <video>
+            element, no film, nothing playing inside any frame. A film
+            opens only when a car is tapped.
+         3. THE RING CARRIES TEN CARS (it carried five, and looked empty).
+         4. THE ROLLS-ROYCE PHANTOM hero is built by exactly the same
+            six-photograph method as every other car.
+         5. NOTHING FREEZES. One advance() function, two drivers
+            (requestAnimationFrame + a setInterval watchdog) sharing one
+            clock; photos load through a prioritised queue, hero first;
+            reduced-motion = half speed, never zero.
+         ===================================================================== */
+      var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var SPEEDF = REDUCED ? 0.5 : 1;
+      var VIEWS = 6;               /* six photographs per car: front, right side, left side, back, top, bottom */
+      /* Turntable fix (owner's order, 2026-11-10): the turning cycle now
+         runs ONLY the four eye-level photographs in one direction —
+         front -> right side -> back -> left side -> front — like a real
+         3D turntable. The top and bottom photographs stay in each set but
+         NEVER enter the cycle, so no car ever flips upside-down. */
+      var SPINSEQ = [0, 1, 3, 2];  /* photo indexes in turning order */
+      var SVIEWS = SPINSEQ.length;
+      var SCYCLE = SVIEWS;         /* one full loop of the turntable */
+      function photoURL(set, k){
+        return PHOTO3D[set][k];   /* embedded base64 photograph — no file request */
+      }
+
+      /* ---------- prioritised frame loader (a few at a time, in order) ---------- */
+      var LOADQ = [], LOAD_ACTIVE = 0, LOAD_MAX = 5;
+      function queueFrame(url, done){
+        var im = new Image();
+        LOADQ.push({ im: im, url: url, done: done });
+        pumpQueue();
+        return im;
+      }
+      function pumpQueue(){
+        while (LOAD_ACTIVE < LOAD_MAX && LOADQ.length){
+          var job = LOADQ.shift();
+          LOAD_ACTIVE++;
+          var finished = false;
+          var finish = function(){
+            if (finished) return;
+            finished = true;
+            LOAD_ACTIVE--;
+            job.done(job.im);
+            pumpQueue();
+          };
+          job.im.onload = finish;
+          job.im.onerror = finish;
+          job.im.src = job.url;
+          if (job.im.complete && job.im.naturalWidth) finish();
+        }
+      }
+
+      /* ---------- catalogue: the ring's ten cars + the hero. Ferrari,
+         Lamborghini, the three Bugattis, Mercedes, BMW and the Phantom
+         open their own breakout films; the Audi, GT-R and Porsche films
+         are still in production, so a tap on them opens the film stage
+         with a note instead of a wrong car's film. ---------- */
+      /* FILMS itself is defined in the manifest script above: every value
+         is the hosted URL of that car's film on GitHub Pages. The player
+         sets it onto the video element only when a car is tapped, so no
+         film loads with the page. The two Bugatti specials below carry
+         their own film keys for the same lookup; Audi, GT-R and Porsche
+         have no key anywhere, so a tap on them still opens the honest
+         still-being-filmed note. */
+      var CARS = {
+        ferrari:    { set:'ferrari',    brand:'ferrari',    badge:'F',   name:'Ferrari 488 GTB',       color:'Rosso Corsa Red', price:'$332,000',   hp:'661 hp',   acc:'3.0 s' },
+        lamborghini:{ set:'lamborghini',brand:'lamborghini',badge:'L',   name:'Lamborghini Huracán',   color:'Giallo Yellow',   price:'$241,000',   hp:'610 hp',   acc:'3.2 s' },
+        chiron:     { set:'chiron',     brand:'bugatti',    badge:'B',   name:'Bugatti Chiron',        color:'Atlantic Blue',   price:'$3,300,000', hp:'1,500 hp', acc:'2.4 s' },
+        mercedes:   { set:'mercedeswhite', brand:'mercedes', badge:'M',  name:'Mercedes-Benz S-Class', color:'Polar White',     price:'$128,000',   hp:'496 hp',   acc:'4.4 s' },
+        bmw:        { set:'bmwblue',    brand:'bmw',        badge:'BMW', name:'BMW M5',                color:'Portimao Blue',   price:'$119,500',   hp:'717 hp',   acc:'3.4 s' },
+        audi:       { set:'audi',       brand:'audi',       badge:'A',   name:'Audi A6',               color:'Mythos Black',    price:'$68,000',    hp:'335 hp',   acc:'5.1 s' },
+        gtr:        { set:'gtr',        brand:'nissan',     badge:'GT',  name:'Nissan GT-R',           color:'Gun Metallic',    price:'$121,000',   hp:'565 hp',   acc:'2.8 s' },
+        porsche:    { set:'porsche',    brand:'porsche',    badge:'P',   name:'Porsche 911',           color:'GT Silver',       price:'$127,000',   hp:'379 hp',   acc:'3.8 s' },
+        tourbillon: { set:'tourbillon', brand:'bugatti',    badge:'B',   name:'Bugatti Tourbillon',    color:'Argent Silver',   price:'$4,100,000', hp:'1,800 hp', acc:'2.0 s', film:'tourbillon' },
+        divo:       { set:'divo',       brand:'bugatti',    badge:'B',   name:'Bugatti Divo',          color:'Titan Blue',      price:'$5,800,000', hp:'1,500 hp', acc:'2.4 s', film:'divo' },
+      };
+      /* the ring: exactly these ten cars, no duplicates — the Phantom
+         lives only in the hero below, never in the ring */
+      var RING_ORDER = ['mercedes', 'ferrari', 'chiron', 'lamborghini', 'audi', 'tourbillon', 'bmw', 'divo', 'gtr', 'porsche'];
+
+
+      /* ---------- spinner registry (filled once, at setup) ---------- */
+      var SPINNERS = [];
+      function createSpinner(el, car, opts){
+        opts = opts || {};
+        var imgA = el.querySelector('img');
+        var imgB = document.createElement('img');
+        imgB.className = 'top';
+        imgB.alt = '';
+        imgB.setAttribute('aria-hidden', 'true');
+        imgA.parentNode.insertBefore(imgB, imgA.nextSibling);
+        var st = {
+          el: el, imgA: imgA, imgB: imgB, car: car,
+          pos: opts.phase || 0,
+          speed: opts.speed || 0.5,   /* photographs per second — a calm photo turn */
+          dragging: false, resumeAt: 0, onScreen: true,
+          imgs: [], loaded: [], curI: -1, curJ: -1
+        };
+        for (var li = 0; li < VIEWS; li++) st.loaded.push(false);
+        for (var si = 0; si < SVIEWS; si++){
+          (function(idx){
+            st.imgs[idx] = queueFrame(photoURL(car.set, idx), function(im){
+              st.loaded[idx] = !!(im.naturalWidth);
+              showPhoto(st);
+            });
+          })(SPINSEQ[si]);
+        }
+        st.loaded[0] = true; /* photograph 1 is the <img> already on the page */
+        /* drag to turn — pointer handlers are attached ONCE, here */
+        var downX = 0, downY = 0, downT = 0, moved = 0, lastX = 0;
+        el.addEventListener('pointerdown', function(e){
+          st.dragging = true; moved = 0;
+          downX = lastX = e.clientX; downY = e.clientY; downT = performance.now();
+          try { el.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        el.addEventListener('pointermove', function(e){
+          if (!st.dragging) return;
+          var dx = e.clientX - lastX; lastX = e.clientX;
+          moved += Math.abs(dx) + Math.abs(e.clientY - downY) * 0.0;
+          var w = el.clientWidth || 300;
+          st.pos += dx * SCYCLE * 0.9 / w;   /* one frame-width of drag = one full turn of the turntable */
+          showPhoto(st);
+        });
+        function endDrag(e){
+          if (!st.dragging) return;
+          st.dragging = false;
+          st.resumeAt = performance.now() + 1600;  /* then auto-turn resumes */
+          var quick = performance.now() - downT < 500;
+          var dist = Math.abs(e.clientX - downX) + Math.abs(e.clientY - downY);
+          if (quick && dist < 8 && moved < 8) openFilm(car);  /* a tap, not a drag */
+        }
+        el.addEventListener('pointerup', endDrag);
+        el.addEventListener('pointercancel', function(){ st.dragging = false; st.resumeAt = performance.now() + 1600; });
+        SPINNERS.push(st);
+        showPhoto(st);
+        return st;
+      }
+      function photoLoaded(st, idx){
+        return st.loaded[idx] || (st.imgs[idx] && st.imgs[idx].complete && st.imgs[idx].naturalWidth > 0);
+      }
+      /* Map the endless position onto the six photographs, there and back:
+         v1 → v2 → v3 → v4 → v5 → v6 → v5 → … so the 3D photo turns inside its
+         frame and never jumps back to the start. */
+      function triPos(p){
+        var m = p % SCYCLE;
+        if (m < 0) m += SCYCLE;
+        return m;
+      }
+      function showPhoto(st){
+        var t = triPos(st.pos);
+        var i = Math.floor(t), f = t - i;
+        if (i >= SVIEWS){ i = SVIEWS - 1; f = 0; }
+        var fi = Math.round(f * 160) / 160;
+        var curPhoto = SPINSEQ[i];
+        var nxtPos = (i + 1) % SVIEWS;
+        var nxtPhoto = SPINSEQ[nxtPos];
+        if (i !== st.curI){
+          st.curI = i;
+          st.imgA.src = photoURL(st.car.set, curPhoto);
+        }
+        /* a breath of parallax while the photographs crossfade — the still
+           photo gains depth, like turning a real 3D photo in the hand */
+        st.imgA.style.transform = 'scale(1.06) translateX(' + (-fi * 0.7).toFixed(2) + '%)';
+        if (fi > 0 && photoLoaded(st, nxtPhoto)){
+          if (st.curJ !== nxtPos){
+            st.curJ = nxtPos;
+            st.imgB.src = photoURL(st.car.set, nxtPhoto);
+          }
+          st.imgB.style.opacity = fi.toFixed(2);
+          st.imgB.style.transform = 'scale(1.06) translateX(' + ((1 - fi) * 0.7).toFixed(2) + '%)';
+        } else {
+          st.imgB.style.opacity = '0';
+        }
+      }
+
+      /* ---------- ring state (created once) ---------- */
+      var RING = { angle: 0, boost: 0, onScreen: true, items: [] };
+      var ringStage = document.getElementById('ringStage');
+      var ringGlint = document.getElementById('ringGlint');
+      function layoutRing(){
+        var narrow = ringStage.clientWidth > 0 && ringStage.clientWidth < 640;
+        var xAmp = narrow ? 31 : 42, yAmp = narrow ? 19 : 28, yBase = narrow ? 53 : 53;
+        var sBase = narrow ? 0.58 : 0.62, sRange = narrow ? 0.50 : 0.56;
+        for (var i = 0; i < RING.items.length; i++){
+          var it = RING.items[i];
+          var a = RING.angle + it.phase;
+          var sx = Math.sin(a), cy = Math.cos(a);
+          var depth = (cy + 1) / 2;              /* 1 = front, 0 = back */
+          it.el.style.left = (50 + sx * xAmp) + '%';
+          it.el.style.top = (yBase + cy * yAmp) + '%';
+          it.el.style.zIndex = String(1 + Math.round(depth * 20));
+          it.el.style.opacity = (0.78 + 0.22 * depth).toFixed(2);
+          it.el.style.transform = 'translate(-50%,-50%) scale(' + (sBase + sRange * depth).toFixed(3) + ')';
+        }
+        /* a bead of light rides the golden track itself, opposite the cars —
+           the ring's turning is visible at a glance, even in the first second */
+        var ga = -RING.angle + 0.7;
+        ringGlint.style.left = (50 + Math.sin(ga) * 48.5) + '%';
+        ringGlint.style.top = (54 + Math.cos(ga) * 41) + '%';
+      }
+
+      /* ---------- hero spinner FIRST (its frames load before all others) ---------- */
+      /* hero removed on the owner's order (2026-11-09): the ring takes its place */
+
+      /* ---------- build the ring cars (setup, once) ---------- */
+      var ringItemsEl = document.getElementById('ringItems');
+      RING_ORDER.forEach(function(key, i){
+        var car = CARS[key];
+        var item = document.createElement('div');
+        item.className = 'ring-item';
+        item.innerHTML =
+          '<div class="oval"><div class="oval-in">' +
+            '<div class="spin" role="img" aria-label="' + car.name + ' 3D photo, built from six photographs — front, both sides, back, top and bottom — tap to watch its film">' +
+              '<img src="' + photoURL(car.set, 0) + '" alt="' + car.name + ' in ' + car.color + ' — 3D photo" ' + (i > 4 ? 'loading="lazy"' : '') + ' />' +
+            '</div>' +
+          '</div></div>' +
+          '<div class="pedestal ringp"></div>' +
+          '<div class="rname">' + car.name.split(' ')[0] + '</div>';
+        ringItemsEl.appendChild(item);
+        RING.items.push({ el: item, phase: i * (Math.PI * 2 / RING_ORDER.length) });
+        createSpinner(item.querySelector('.spin'), car, { phase: i * 1.7, speed: 0.30 });
+      });
+      layoutRing(); /* correct first paint, before the loop starts */
+
+      /* ---------- the four category cards (setup, once) ---------- */
+      var catSpins = document.querySelectorAll('#catGrid .spin');
+      for (var ci = 0; ci < catSpins.length; ci++){
+        (function(el){
+          createSpinner(el, CARS[el.getAttribute('data-car')], { phase: Math.random() * SCYCLE, speed: 0.30 });
+        })(catSpins[ci]);
+      }
+      var viewBtns = document.querySelectorAll('.view-btn');
+      for (var vi = 0; vi < viewBtns.length; vi++){
+        (function(btn){
+          btn.addEventListener('click', function(){ openFilm(CARS[btn.getAttribute('data-film')]); });
+        })(viewBtns[vi]);
+      }
+
+      /* pause work for off-screen spinners (state only — nothing is rebuilt) */
+      if (window.IntersectionObserver){
+        var spinByEl = {};
+        SPINNERS.forEach(function(st){ spinByEl[SPINNERS.indexOf(st)] = st; });
+        var io = new IntersectionObserver(function(entries){
+          entries.forEach(function(en){
+            var st = en.target.__spinner;
+            if (st) st.onScreen = en.isIntersecting;
+            if (en.target === ringStage) RING.onScreen = en.isIntersecting;
+          });
+        }, { rootMargin: '240px 0px' });
+        SPINNERS.forEach(function(st){ st.el.__spinner = st; io.observe(st.el); });
+        io.observe(ringStage);
+      }
+
+      /* ---------- breakout film overlay ---------- */
+      var film = document.getElementById('film'),
+          filmVideo = document.getElementById('filmVideo'),
+          filmName = document.getElementById('filmName'),
+          filmCap = document.getElementById('filmCap');
+      function openFilm(car){
+        var src = FILMS[car.film] || FILMS[car.brand] || '';
+        filmName.textContent = car.name;
+        filmVideo.poster = photoURL(car.set, 0);
+        if (src){
+          filmCap.innerHTML = 'The <b>' + car.name + '</b> breakout film — out of the screen, through the showroom glass door and onto the road, with <b>one driver</b> at the wheel from the first tap to the smiling return.';
+          filmVideo.style.display = '';
+          filmVideo.src = src;
+          film.classList.add('open');
+          document.body.style.overflow = 'hidden';
+          var pr = filmVideo.play();
+          if (pr && pr.catch) pr.catch(function(){});
+        } else {
+          /* this car's own film is still in production — never play a
+             different car's film under its name, and never point the
+             player at a file that does not exist */
+          filmCap.innerHTML = 'The <b>' + car.name + '</b> breakout film is still being filmed — for now, its photo-3D in the ring above is already turning live.';
+          filmVideo.style.display = 'none';
+          film.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+      function closeFilm(){
+        try { filmVideo.pause(); } catch (e) {}
+        filmVideo.removeAttribute('src');
+        filmVideo.load();
+        film.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+      document.getElementById('filmClose').addEventListener('click', closeFilm);
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && film.classList.contains('open')) closeFilm(); });
+
+      /* =====================================================================
+         THE ANIMATION DRIVERS — two drivers, one shared clock.
+         advance(now) moves every spinner and the ring by the REAL elapsed
+         time since the last advance, no matter which driver called it.
+         requestAnimationFrame is the main driver; a setInterval watchdog
+         calls the same advance() so the showroom keeps turning even on a
+         phone/browser that throttles or pauses animation frames.
+         ===================================================================== */
+      var lastT = performance.now();
+      function advance(now){
+        var dt = (now - lastT) / 1000;
+        lastT = now;
+        if (document.hidden) return;
+        if (dt <= 0) return;
+        if (dt > 0.25) dt = 0.25;   /* returning to the tab: one small step, no lurch */
+        var i, st;
+        for (i = 0; i < SPINNERS.length; i++){
+          st = SPINNERS[i];
+          if (!st.onScreen || st.dragging) continue;
+          if (now >= st.resumeAt){ st.pos += st.speed * SPEEDF * dt; }
+          showPhoto(st);
+        }
+        if (RING.onScreen){
+          RING.angle += dt * (Math.PI * 2 / 24) * SPEEDF + RING.boost * dt;
+          RING.boost *= Math.pow(0.35, dt);
+          if (Math.abs(RING.boost) < 0.001) RING.boost = 0;
+          layoutRing();
+        }
+      }
+      function rafLoop(now){
+        advance(now);
+        requestAnimationFrame(rafLoop);
+      }
+      requestAnimationFrame(rafLoop);
+      setInterval(function(){ advance(performance.now()); }, 120);
+    </script>
+  </body>
+</html>
