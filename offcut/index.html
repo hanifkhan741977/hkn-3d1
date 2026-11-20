@@ -148,6 +148,23 @@ body.open #info{opacity:1}
   transition:opacity .4s ease .25s;
 }
 body.open #close{opacity:1;pointer-events:auto}
+body.mobile #art{width:780px;height:1300px}
+body.mobile .ui{font-size:15px}
+body.mobile #logo{font-size:84px;top:40px}
+body.mobile #about{left:30px;top:56px}
+body.mobile #contact{right:30px;top:56px}
+body.mobile #close{right:30px;top:56px}
+body.mobile #rail{left:40px;right:40px;top:300px;height:14px}
+body.mobile .g{top:282px;pointer-events:none}
+body.mobile .g i{pointer-events:auto;cursor:pointer}
+body.mobile #cap{top:600px;font-size:14px}
+body.mobile #avail{top:1090px}
+body.mobile #big,body.mobile #big2{top:300px}
+body.mobile .arr{top:520px}
+body.mobile #info{top:840px}
+body.mobile #num{font-size:13px}
+body.mobile #price{font-size:15px}
+body.mobile #band .track{font-size:16px}
 </style>
 </head>
 <body>
@@ -218,6 +235,8 @@ var nameEl = document.getElementById("name");
 var priceEl = document.getElementById("price");
 var hov = -1, open = -1;
 var G = [];
+var GI = [];
+var suppressClick = false;
 function paint(el, k) {
   var ew = el.offsetWidth, eh = el.offsetHeight;
   var sx = ew / BW, sy = eh / CH;
@@ -259,7 +278,7 @@ function openG(k) {
   fill(k);
   document.body.classList.add("open");
   big.animate([
-    { transform: "translate(" + (gx - 750) + "px, -8px) scale(.61)", opacity: 1 },
+    { transform: "translate(" + (gx - CX) + "px, -8px) scale(.61)", opacity: 1 },
     { transform: "none", opacity: 1 }
   ], { duration: 750, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" });
   G[k].style.visibility = "hidden";
@@ -290,7 +309,7 @@ function closeG() {
   var gx = parseFloat(G[k].style.left);
   big.animate([
     { transform: "none", opacity: 1 },
-    { transform: "translate(" + (gx - 750) + "px, -8px) scale(.61)", opacity: 1 }
+    { transform: "translate(" + (gx - CX) + "px, -8px) scale(.61)", opacity: 1 }
   ], { duration: 650, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" });
   document.body.classList.remove("open");
   setTimeout(function () {
@@ -308,12 +327,14 @@ for (var k = 0; k < N; k++) {
     g.appendChild(i);
     rack.appendChild(g);
     paint(i, k);
-    g.addEventListener("pointerenter", function () { if (open < 0) { hov = k; layout(); } });
-    g.addEventListener("click", function () { openG(k); });
+    g.addEventListener("pointerenter", function (e) { if (e.pointerType === "touch") return; if (open < 0) { hov = k; layout(); } });
+    g.addEventListener("pointerdown", function (e) { if (e.pointerType === "touch" && open < 0 && hov !== k) { hov = k; layout(); suppressClick = true; } });
+    g.addEventListener("click", function () { if (suppressClick) { suppressClick = false; return; } openG(k); });
     G.push(g);
+    GI.push(i);
   })(k);
 }
-rack.addEventListener("pointerleave", function () { if (open < 0) { hov = -1; layout(); } });
+rack.addEventListener("pointerleave", function (e) { if (e.pointerType === "touch") return; if (open < 0) { hov = -1; layout(); } });
 document.getElementById("prev").addEventListener("click", function () { step(-1); });
 document.getElementById("next").addEventListener("click", function () { step(1); });
 document.getElementById("close").addEventListener("click", function () { closeG(); });
@@ -340,14 +361,34 @@ window.addEventListener("keydown", function (e) {
     }
   }
 })();
+var BW_ = 1500, BH_ = 1000;
 function fit() {
-  var k = Math.min(window.innerWidth / 1500, window.innerHeight / 1000);
+  var k = Math.min(window.innerWidth / BW_, window.innerHeight / BH_);
   art.style.transform = "scale(" + k + ")";
-  art.style.left = ((window.innerWidth - 1500 * k) / 2) + "px";
-  art.style.top = ((window.innerHeight - 1000 * k) / 2) + "px";
+  art.style.left = ((window.innerWidth - BW_ * k) / 2) + "px";
+  art.style.top = ((window.innerHeight - BH_ * k) / 2) + "px";
 }
-window.addEventListener("resize", fit);
-fit();
+function repaintAll() {
+  for (var k = 0; k < N; k++) paint(GI[k], k);
+}
+var lastMobile = null;
+function syncMode() {
+  var m = window.innerWidth <= 820 && window.innerHeight > window.innerWidth;
+  if (m === lastMobile) { fit(); return; }
+  lastMobile = m;
+  document.body.classList.toggle("mobile", m);
+  BW_ = m ? 780 : 1500;
+  BH_ = m ? 1300 : 1000;
+  SLOT = m ? 64 : 108;
+  OPEN = m ? 120 : 86;
+  CX = m ? 390 : 750;
+  fit();
+  repaintAll();
+  layout();
+  if (open >= 0) paint(big, open);
+}
+window.addEventListener("resize", syncMode);
+syncMode();
 layout();
 window.__closet = {
   openG: openG,
