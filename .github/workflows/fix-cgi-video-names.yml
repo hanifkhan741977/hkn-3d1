@@ -1,0 +1,28 @@
+name: Fix CGI video names
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-cgi-video-names.yml'
+permissions:
+  contents: write
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Rename videos to match content
+        run: |
+          set -e
+          git config user.name "hanifkhan741977"
+          git config user.email "hkn341977@gmail.com"
+          git mv tom-ford-lost-cherry-cgi-ad.mp4 hkn-lipstick-cgi-ad.mp4
+          git mv lipss-cherry-cgi-ad.mp4 tom-ford-lost-cherry-cgi-ad.mp4
+          git mv gaddar-watch-cgi-ad.mp4 lipss-cherry-cgi-ad.mp4
+          git mv hkn-paris-bag-cgi-ad.mp4 temp-hkn-bag.mp4
+          git mv louis-vuitton-clouds-cgi-ad.mp4 hkn-paris-bag-cgi-ad.mp4
+          git mv temp-hkn-bag.mp4 louis-vuitton-clouds-cgi-ad.mp4
+          git status --short
+          git commit -m "Rename CGI ad videos to match content"
+          git push
